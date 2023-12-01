@@ -14,6 +14,7 @@ class ContaBancariaTest {
         ContaBancaria conta = new ContaBancaria(new BigDecimal("70.00"));
         conta.saque(new BigDecimal("50.01"));
         assertEquals(new BigDecimal("19.99"), conta.saldo());
+        System.out.println(conta.saldo());
     }
 
     @Test
@@ -26,6 +27,71 @@ class ContaBancariaTest {
     void saqueComValorNegativoFalha(){
         ContaBancaria conta = new ContaBancaria(BigDecimal.TEN);
         assertThrows(IllegalArgumentException.class, ()-> conta.saque(new BigDecimal("-10.0")));
+    }
+
+    @Test
+    void saqueComValorMaiorFalha(){
+        ContaBancaria conta = new ContaBancaria(BigDecimal.TEN);
+        assertThrows(RuntimeException.class, ()-> conta.saque(new BigDecimal("20.0")));
+    }
+
+    @Test
+    void saqueComVAlorIgualNaoFalha(){
+        ContaBancaria conta = new ContaBancaria(BigDecimal.TEN);
+        conta.saque(new BigDecimal("10.0"));
+        assertEquals(new BigDecimal("0.00"), conta.saldo());
+    }
+
+    @Test
+    void saquecomValorNullFalha(){
+        ContaBancaria conta = new ContaBancaria(BigDecimal.TEN);
+        assertThrows(IllegalArgumentException.class, ()-> conta.saque(null));
+    }
+
+    @Test
+    void deposito() {
+        ContaBancaria conta = new ContaBancaria(BigDecimal.TEN);
+        conta.deposito(BigDecimal.TEN);
+        assertEquals(new BigDecimal("20"), conta.saldo());
+    }
+
+    @Test
+    void depositoComValorZeradoFalha() {
+        ContaBancaria conta = new ContaBancaria(BigDecimal.TEN);
+        assertThrows(IllegalArgumentException.class, ()-> conta.deposito(BigDecimal.ZERO));
+    }
+
+    @Test
+    void depositoComValorNegativoFalha() {
+        ContaBancaria conta = new ContaBancaria(BigDecimal.TEN);
+        assertThrows(IllegalArgumentException.class, ()-> conta.deposito(new BigDecimal("-10.0")));
+    }
+
+    @Test
+    void depositoComValorNullFalha() {
+        ContaBancaria conta = new ContaBancaria(BigDecimal.TEN);
+        assertThrows(IllegalArgumentException.class, ()-> conta.deposito(null));
+    }
+
+    @Test
+    void saqueAposDeposito() {
+        ContaBancaria conta = new ContaBancaria(BigDecimal.TEN);
+        conta.deposito(BigDecimal.TEN);
+        conta.saque(new BigDecimal("5"));
+        assertEquals(new BigDecimal("15"), conta.saldo());
+        System.out.println(conta.saldo());
+    }
+
+    @Test
+    void saldo() {
+        ContaBancaria conta = new ContaBancaria(new BigDecimal("29.90"));
+        assertEquals(new BigDecimal("29.90"), conta.saldo());
+        System.out.println(conta.saldo());
+    }
+
+    @Test
+    void criarContaComSaldoNullFalha() {
+        assertThrows(IllegalArgumentException.class, ()-> new ContaBancaria(null));
     }
 
 
