@@ -1,6 +1,7 @@
 package com.algaworks.junit.blog.negocio;
 
 import com.algaworks.junit.blog.armazenamento.ArmazenamentoEditor;
+import com.algaworks.junit.blog.exception.RegraNegocioException;
 import com.algaworks.junit.blog.modelo.Editor;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -8,8 +9,10 @@ import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
 @ExtendWith(MockitoExtension.class)
@@ -71,5 +74,26 @@ public class CadastroEditorComMockTest {
         Editor editorSpy = Mockito.spy(editor);
         cadastroEditor.criar(editor);
         Mockito.verify(editorSpy, Mockito.atLeast(1)).getEmail();
+    }
+
+    //Alterando retorno de um mock após chamadas consecutivas
+    @Test
+    void Dado_um_editor_com_email_existente_Quando_cadastrar_Entao_deve_lancar_exception(){
+        Mockito.when(armanezamentoEditor.encontrarPorEmail("Lucas@email.com"))
+                .thenReturn(Optional.empty())
+                .thenReturn(Optional.of(editor));
+        Editor editorComEmailExistente = new Editor(null, "Lucas", "Lucas@email.com",BigDecimal.TEN, true);
+        cadastroEditor.criar(editor);
+        assertThrows(RegraNegocioException.class, ()-> cadastroEditor.criar(editorComEmailExistente));
+    }
+
+    Verificando ordem de chamada de métodos
+    @Test
+    void Dado_um_editor_valido_Quando_cadastrar_Entao_deve_enviar_email_apos_salvar(){
+        cadastroEditor.criar(editor);
+
+        InOrder inOrder = Mockito.inOrder(armanezamentoEditor, genrenciadorEnvioEmail);
+        inOrder.verify(armanezamentoEditor, Mockito.times(1)).salvar(editor);
+        inOrder.verify(genrenciadorEnvioEmail, Mockito.times(1)).enviarEmail(Mockito.any(Mensagem.class));
     }
 }
