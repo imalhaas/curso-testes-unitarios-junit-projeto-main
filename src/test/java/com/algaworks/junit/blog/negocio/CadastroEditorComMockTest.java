@@ -30,70 +30,88 @@ public class CadastroEditorComMockTest {
     CadastroEditor cadastroEditor;
 
 
-    @BeforeEach
-    void init(){
-        editor = new Editor(null, "Lucas", "Lucas@email.com",BigDecimal.TEN, true);
-        Mockito.when(armanezamentoEditor.salvar(Mockito.any(Editor.class)))
-                .thenAnswer(invocacao -> {
-                    Editor editorPassado = invocacao.getArgument(0, Editor.class);
-                    editorPassado.setId(1L);
-                    return editorPassado;
-                });
+    @Nested
+   class cadastroEditorValido {
+
+        @BeforeEach
+        void init(){
+            editor = new Editor(null, "Lucas", "Lucas@email.com",BigDecimal.TEN, true);
+            Mockito.when(armanezamentoEditor.salvar(Mockito.any(Editor.class)))
+                    .thenAnswer(invocacao -> {
+                        Editor editorPassado = invocacao.getArgument(0, Editor.class);
+                        editorPassado.setId(1L);
+                        return editorPassado;
+                    });
+
+        }
+        @Test
+        void Dado_um_editor_valido_Quando_criar_de_retornar_um_id_de_cadastro(){
+            Editor editorSalvo = cadastroEditor.criar(editor);
+            assertEquals(1L, editorSalvo.getId());
+        }
+
+        @Test
+        void Dado_um_editor_valido_Quando_criar_Entao_deve_chamar_metodo_salvar_do_armazenamento(){
+            cadastroEditor.criar(editor);
+            Mockito.verify(armanezamentoEditor, Mockito.times(1))
+                    .salvar(Mockito.eq(editor));
+        }
+
+        //capturando parametros enviados aos mocks com argument captor.
+        @Test
+        void Dado_um_editor_valido_Quando_cadastrar_Entao_deve_enviar_email_com_destino_ao_editor(){
+
+            Editor editorSalvo = cadastroEditor.criar(editor);
+
+            Mockito.verify(genrenciadorEnvioEmail).enviarEmail(mensagemArgumentCaptor.capture());
+
+            Mensagem mensagem = mensagemArgumentCaptor.getValue();
+
+            assertEquals(editorSalvo.getEmail(), mensagem.getDestinatario());
+
+        }
+
+        //espionando um objeto real com mokito
+        @Test
+        void Dado_um_editor_valido_Quando_cadastrar_Entao_deve_verificar_o_email(){
+            Editor editorSpy = Mockito.spy(editor);
+            cadastroEditor.criar(editor);
+            Mockito.verify(editorSpy, Mockito.atLeast(1)).getEmail();
+        }
+
+        //Alterando retorno de um mock após chamadas consecutivas
+        @Test
+        void Dado_um_editor_com_email_existente_Quando_cadastrar_Entao_deve_lancar_exception(){
+            Mockito.when(armanezamentoEditor.encontrarPorEmail("Lucas@email.com"))
+                    .thenReturn(Optional.empty())
+                    .thenReturn(Optional.of(editor));
+            Editor editorComEmailExistente = new Editor(null, "Lucas", "Lucas@email.com",BigDecimal.TEN, true);
+            cadastroEditor.criar(editor);
+            assertThrows(RegraNegocioException.class, ()-> cadastroEditor.criar(editorComEmailExistente));
+        }
+
+        //Verificando ordem de chamada de métodos
+        @Test
+        void Dado_um_editor_valido_Quando_cadastrar_Entao_deve_enviar_email_apos_salvar(){
+            cadastroEditor.criar(editor);
+
+            InOrder inOrder = Mockito.inOrder(armanezamentoEditor, genrenciadorEnvioEmail);
+            inOrder.verify(armanezamentoEditor, Mockito.times(1)).salvar(editor);
+            inOrder.verify(genrenciadorEnvioEmail, Mockito.times(1)).enviarEmail(Mockito.any(Mensagem.class));
+        }
 
     }
-    @Test
-    void Dado_um_editor_valido_Quando_criar_de_retornar_um_id_de_cadastro(){
-        Editor editorSalvo = cadastroEditor.criar(editor);
-        assertEquals(1L, editorSalvo.getId());
-    }
 
-    @Test
-    void Dado_um_editor_valido_Quando_criar_Entao_deve_chamar_metodo_salvar_do_armazenamento(){
-        cadastroEditor.criar(editor);
-        Mockito.verify(armanezamentoEditor, Mockito.times(1))
-                .salvar(Mockito.eq(editor));
-    }
+    @Nested
+    class CadastroComEditorNull{
 
-    //capturando parametros enviados aos mocks com argument captor.
-    @Test
-    void Dado_um_editor_valido_Quando_cadastrar_Entao_deve_enviar_email_com_destino_ao_editor(){
-
-        Editor editorSalvo = cadastroEditor.criar(editor);
-
-        Mockito.verify(genrenciadorEnvioEmail).enviarEmail(mensagemArgumentCaptor.capture());
-
-        Mensagem mensagem = mensagemArgumentCaptor.getValue();
-
-        assertEquals(editorSalvo.getEmail(), mensagem.getDestinatario());
+        @Test
+        void dado_um_cadastro_com_editor_null_deve_lancar_exception(){
+            Assertions.assertThrows(NullPointerException.class, ()-> cadastroEditor.criar(null));
+            Mockito.verify(armanezamentoEditor, Mockito.never()).salvar(Mockito.any());
+            Mockito.verify(genrenciadorEnvioEmail, Mockito.never()).enviarEmail(Mockito.any());
+        }
 
     }
 
-    //espionando um objeto real com mokito
-    @Test
-    void Dado_um_editor_valido_Quando_cadastrar_Entao_deve_verificar_o_email(){
-        Editor editorSpy = Mockito.spy(editor);
-        cadastroEditor.criar(editor);
-        Mockito.verify(editorSpy, Mockito.atLeast(1)).getEmail();
-    }
-
-    //Alterando retorno de um mock após chamadas consecutivas
-    @Test
-    void Dado_um_editor_com_email_existente_Quando_cadastrar_Entao_deve_lancar_exception(){
-        Mockito.when(armanezamentoEditor.encontrarPorEmail("Lucas@email.com"))
-                .thenReturn(Optional.empty())
-                .thenReturn(Optional.of(editor));
-        Editor editorComEmailExistente = new Editor(null, "Lucas", "Lucas@email.com",BigDecimal.TEN, true);
-        cadastroEditor.criar(editor);
-        assertThrows(RegraNegocioException.class, ()-> cadastroEditor.criar(editorComEmailExistente));
-    }
-
-    Verificando ordem de chamada de métodos
-    @Test
-    void Dado_um_editor_valido_Quando_cadastrar_Entao_deve_enviar_email_apos_salvar(){
-        cadastroEditor.criar(editor);
-
-        InOrder inOrder = Mockito.inOrder(armanezamentoEditor, genrenciadorEnvioEmail);
-        inOrder.verify(armanezamentoEditor, Mockito.times(1)).salvar(editor);
-        inOrder.verify(genrenciadorEnvioEmail, Mockito.times(1)).enviarEmail(Mockito.any(Mensagem.class));
-    }
 }
