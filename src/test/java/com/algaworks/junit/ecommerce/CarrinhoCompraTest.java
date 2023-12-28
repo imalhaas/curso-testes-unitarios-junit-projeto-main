@@ -223,6 +223,7 @@ class CarrinhoCompraTest {
                 carrinhoCompra.adicionarProduto(desktop, 1);
             }
 
+            //AssertJ
             @Test
             @DisplayName("Então deve conter apenas produtos adicionados")
             void entaoDeveConterApenasProdutosAdicionados(){
