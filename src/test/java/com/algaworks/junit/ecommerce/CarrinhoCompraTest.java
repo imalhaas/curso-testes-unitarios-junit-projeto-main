@@ -201,7 +201,7 @@ class CarrinhoCompraTest {
 
         @BeforeEach
         public void beforeEach() {
-            cliente = new Cliente(1L, "Alex Silva");
+            cliente = new Cliente(1L, "Lucas");
 
             notebook = new Produto(1L, "Notebook", "Notebook", BigDecimal.TEN);
             desktop = new Produto(2L, "Desktop", "Desktop", BigDecimal.valueOf(20.50));
@@ -221,6 +221,15 @@ class CarrinhoCompraTest {
                 carrinhoCompra.adicionarProduto(notebook, 1);
                 carrinhoCompra.adicionarProduto(notebook, 1);
                 carrinhoCompra.adicionarProduto(desktop, 1);
+            }
+
+            @Test
+            @DisplayName("Então deve conter apenas produtos adicionados")
+            void entaoDeveConterApenasProdutosAdicionados(){
+                org.assertj.core.api.Assertions.assertThat(carrinhoCompra.getItens())
+                        .flatMap(ItemCarrinhoCompra::getProduto)
+                        .contains(notebook, desktop)
+                        .doesNotContain(tablet);
             }
 
             @Test

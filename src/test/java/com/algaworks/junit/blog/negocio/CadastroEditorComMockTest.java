@@ -87,7 +87,7 @@ public class CadastroEditorComMockTest {
 
         @Test
         void Dado_um_editor_com_email_existente_Quando_cadastrar_Entao_deve_lancar_exception() {
-            Mockito.when(armazenamentoEditor.encontrarPorEmail("lucas@email.com"))
+            Mockito.when(armazenamentoEditor.encontrarPorEmail("lucas@gmail.com"))
                     .thenReturn(Optional.empty())
                     .thenReturn(Optional.of(editor));
             Editor editorComEmailExistente = EditorTestData.umEditorNovo().build();
@@ -129,7 +129,7 @@ public class CadastroEditorComMockTest {
         @Test
         void dado_um_editor_valido_Quando_editar_Entao_deve_alterar_editor_salvo() {
             Editor editorAtualizado = EditorTestData.umEditorExistente()
-                    .comEmail("lucasdecassia@email.com")
+                    .comEmail("lucasdecassia@gmail.com")
                     .comNome("Lucas Magalhães")
                     .build();
 

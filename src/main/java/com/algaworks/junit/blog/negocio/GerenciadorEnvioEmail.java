@@ -9,11 +9,11 @@ public class GerenciadorEnvioEmail {
     void enviarEmail(Mensagem mensagem) {
         try {
             Email email = new SimpleEmail();
-            email.setHostName("smtp.gmail.com");
+            email.setHostName("lucas@gmail.com");
             email.setSmtpPort(465);
-            email.setAuthenticator(new DefaultAuthenticator("algatestes.algaworks", ""));
+            email.setAuthenticator(new DefaultAuthenticator("Lucas.algaworks", ""));
             email.setSSLOnConnect(true);
-            email.setFrom("algatestes@gmail.com");
+            email.setFrom("lucas@gmail.com");
             email.setSubject(mensagem.getAssunto());
             email.setMsg(mensagem.getConteudo());
             email.addTo(mensagem.getAssunto());
